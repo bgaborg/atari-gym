@@ -1,0 +1,20 @@
+[project]
+name = "gym-atari"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "ale-py>=0.10.1",
+    "gymnasium[other]>=1.0.0",
+    "torch==2.5.1+cu121",
+]
+
+
+[tool.uv.sources]
+torch = { index = "pytorch" }
+
+[[tool.uv.index]]
+name = "pytorch"
+url = "https://download.pytorch.org/whl/cu121"
+#  uv pip install -r pyproject.toml --index-strategy unsafe-best-match
