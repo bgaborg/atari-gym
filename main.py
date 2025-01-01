@@ -11,7 +11,6 @@ gym.register_envs(ale_py)
 
 env = gym.make('ALE/SpaceInvaders-v5')
 env = wrappers.SkipFrame(env, skip=4)
-# GrayScaleObservation
 env = gym.wrappers.GrayscaleObservation(env, keep_dim=False)
 env = gym.wrappers.ResizeObservation(env, shape=(84, 84))
 env = gym.wrappers.TransformObservation(env, lambda obs: (obs / 255.0).astype(np.uint8), observation_space=env.observation_space)
@@ -74,6 +73,8 @@ for e in range(episodes):
         if terminated or truncated:
             break
 
+    logger.log_episode()
+
     delta_time = datetime.datetime.now() - start_time
     episode_times[e] = delta_time.total_seconds()
 
@@ -82,5 +83,11 @@ for e in range(episodes):
         average_episode_time = np.mean(episode_times[:e+1])
         expected_time_remaining = str(datetime.timedelta(seconds=(episodes - e) * average_episode_time))
         print(f"The average episode time is {average_episode_time} seconds, the expected time remaining is {expected_time_remaining} seconds.")
+        logger.record(
+            episode=e,
+            epsilon=agent.exploration_rate,
+            step=agent.curr_step
+        )
 
+agent.save()
 env.close()

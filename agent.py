@@ -8,9 +8,10 @@ from collections import deque
 
 class Agent:
     def __init__(self, state_dim, action_dim, save_dir, iterations, checkpoint=None):
+        my_rig_factor = 0.75
         self.state_dim = state_dim
         self.action_dim = action_dim
-        self.memory = deque(maxlen=100000)
+        self.memory = deque(maxlen=100000 * my_rig_factor)
         self.batch_size = 32
 
         self.iterations = iterations
@@ -20,17 +21,17 @@ class Agent:
         self.gamma = 0.9
 
         self.curr_step = 0
-        self.burnin = 1e5  # min. experiences before training
+        self.burnin = 1e5 * my_rig_factor  # min. experiences before training
         self.learn_every = 3   # no. of experiences between updates to Q_online
-        self.sync_every = 1e4   # no. of experiences between Q_target & Q_online sync
+        self.sync_every = 1e4 * my_rig_factor   # no. of experiences between Q_target & Q_online sync
 
-        self.save_every = 5e5   # no. of experiences between saving Mario Net
+        self.save_every = 5e5 * my_rig_factor   # no. of experiences between saving Agent Net
         self.save_dir = save_dir
 
         self.use_cuda = torch.cuda.is_available()
         print(f"Using CUDA: {self.use_cuda}")
 
-        # Mario's DNN to predict the most optimal action - we implement this in the Learn section
+        # Agent's DNN to predict the most optimal action - we implement this in the Learn section
         self.net = AgentNet(self.state_dim, self.action_dim).float()
         if self.use_cuda:
             self.net = self.net.to(device='cuda')
@@ -49,7 +50,7 @@ class Agent:
         Inputs:
         state(LazyFrame): A single observation of the current state, dimension is (state_dim)
         Outputs:
-        action_idx (int): An integer representing which action Mario will perform
+        action_idx (int): An integer representing which action Agent will perform
         """
         # EXPLORE
         if np.random.rand() < self.exploration_rate:
@@ -81,6 +82,11 @@ class Agent:
         reward (float),
         done(bool))
         """
+
+        if torch.cuda.is_available():
+            if torch.cuda.memory_allocated(0) > 0.8 * torch.cuda.get_device_properties(0).total_memory:
+                torch.cuda.empty_cache()
+
         state = torch.FloatTensor(state).cuda() if self.use_cuda else torch.FloatTensor(state)
         next_state = torch.FloatTensor(next_state).cuda() if self.use_cuda else torch.FloatTensor(next_state)
         action = torch.LongTensor([action]).cuda() if self.use_cuda else torch.LongTensor([action])
@@ -153,7 +159,7 @@ class Agent:
 
 
     def save(self):
-        save_path = self.save_dir / f"mario_net_{int(self.curr_step // self.save_every)}.chkpt"
+        save_path = self.save_dir / f"agent_net_{int(self.curr_step // self.save_every)}.chkpt"
         torch.save(
             dict(
                 model=self.net.state_dict(),
@@ -161,7 +167,7 @@ class Agent:
             ),
             save_path
         )
-        print(f"MarioNet saved to {save_path} at step {self.curr_step}")
+        print(f"Agent Net saved to {save_path} at step {self.curr_step}")
 
 
     def load(self, load_path):
