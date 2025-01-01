@@ -11,7 +11,7 @@ class Agent:
         my_rig_factor = 0.75
         self.state_dim = state_dim
         self.action_dim = action_dim
-        self.memory = deque(maxlen=100000 * my_rig_factor)
+        self.memory = deque(maxlen=int(100000 * my_rig_factor))
         self.batch_size = 32
 
         self.iterations = iterations

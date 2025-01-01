@@ -58,7 +58,7 @@ for e in range(episodes):
         comm_reward += reward
 
         # 6. Remember
-        agent.cache(state=observation, next_state=next_observation, action=action, reward=reward, done=terminated or truncated)
+        agent.cache(state=observation, next_state=next_observation, action=action, reward=reward, done=(terminated or truncated))
 
         # 7. Learn
         q, loss = agent.learn()
