@@ -1,4 +1,5 @@
 import gymnasium as gym
+from gymnasium.spaces import Discrete
 
 class SkipFrame(gym.Wrapper):
     def __init__(self, env, skip):
@@ -17,3 +18,12 @@ class SkipFrame(gym.Wrapper):
             if done:
                 break
         return obs, reward, terminated, truncated, info
+
+class ActionSpaceWrapper(gym.ActionWrapper):
+    def __init__(self, env, allowed_actions):
+        super(ActionSpaceWrapper, self).__init__(env)
+        self.allowed_actions = allowed_actions
+        self.action_space = Discrete(len(allowed_actions), start=1)
+
+    def action(self, action):
+        return self.allowed_actions[action]

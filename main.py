@@ -16,14 +16,15 @@ env = gym.wrappers.GrayscaleObservation(env, keep_dim=False)
 env = gym.wrappers.ResizeObservation(env, shape=(84, 84))
 env = gym.wrappers.TransformObservation(env, lambda obs: (obs / 255.0).astype(np.uint8), observation_space=env.observation_space)
 env = gym.wrappers.FrameStackObservation(env, 4)
-observation, info = env.reset(seed=42)
+env = wrappers.ActionSpaceWrapper(env, [1,2,3,4,5])
+observation, info = env.reset()
 
-# The environment's action space
-print(f"Action space: {env.action_space}")
+# # The environment's action space
+# print(f"Action space: {env.action_space}")
 
-print("Possible actions:")
-for action in range(env.action_space.n):
-    print(f"Action {action}: {env.unwrapped.get_action_meanings()[action]}")
+# print("Possible actions:")
+# for action in range(env.action_space.n):
+#     print(f"Action {action}: {env.unwrapped.get_action_meanings()[action]}")
 
 save_dir = Path('checkpoints') / datetime.datetime.now().strftime('%Y-%m-%dT%H-%M-%S')
 save_dir.mkdir(parents=True)
@@ -43,7 +44,7 @@ agent = agent.Agent(
 total_start_time = datetime.datetime.now()
 discord_bot.send(f"Training has started at {total_start_time}.")
 for e in range(episodes):
-    observation, info = env.reset(seed=42)
+    observation, info = env.reset()
 
     comm_reward = 0
 
@@ -85,7 +86,7 @@ for e in range(episodes):
         print(f"Episode {e} finished with reward {comm_reward} in {delta_time.total_seconds()} seconds.")
         average_episode_time = np.mean(episode_times[:e+1])
         expected_time_remaining = str(datetime.timedelta(seconds=(episodes - e) * average_episode_time))
-        print(f"The average episode time is {average_episode_time} seconds, the expected time remaining is {expected_time_remaining} seconds.")
+        print(f"The average episode time is {average_episode_time} seconds, the expected time remaining is {expected_time_remaining}.")
         logger.record(
             episode=e,
             epsilon=agent.exploration_rate,
@@ -93,15 +94,16 @@ for e in range(episodes):
         )
 
     app_running_time = datetime.datetime.now() - total_start_time
-    if app_running_time.total_seconds() > 60 * 60:
+    if app_running_time.total_seconds() > 30 * 60:
         # report current status to Discord
         msg = (
-            f"Training has been running for {app_running_time.total_seconds()} seconds. "
+            f"Training has been running for {app_running_time.total_seconds()/60} minutes. "
             f"Episode {e} finished with reward {comm_reward} in {delta_time.total_seconds()} seconds."
-            f"The average episode time is {average_episode_time} seconds, the expected time remaining is {expected_time_remaining} seconds."
+            f"The average episode time is {average_episode_time} seconds, the expected time remaining is {expected_time_remaining}."
             f"Epsilon: {agent.exploration_rate}, Step: {agent.curr_step}, Q: {q}, Loss: {loss}"
         )
         discord_bot.send(msg)
 
 agent.save()
 env.close()
+discord_bot.send(f"Training has finished at {datetime.datetime.now()}, in {app_running_time.total_seconds()} seconds.")

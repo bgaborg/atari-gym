@@ -93,12 +93,14 @@ class Agent:
             if torch.cuda.memory_allocated(0) > 0.8 * torch.cuda.get_device_properties(0).total_memory:
                 torch.cuda.empty_cache()
 
+
+        state = torch.tensor(state, dtype=torch.float, device=self.device)
         next_state = torch.tensor(next_state, dtype=torch.float, device=self.device)
         action = torch.tensor([action], dtype=torch.long, device=self.device)
-        reward = torch.tensor([reward], dtype=torch.float, device=self.device)  # Changed to float32
+        reward = torch.tensor([reward], dtype=torch.float, device=self.device)
         done = torch.tensor([done], dtype=torch.bool, device=self.device)
 
-        self.memory.append( (state, next_state, action, reward, done,) )
+        self.memory.append((state, next_state, action, reward, done))
 
 
     def recall(self):
