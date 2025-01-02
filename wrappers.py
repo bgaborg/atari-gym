@@ -23,7 +23,7 @@ class ActionSpaceWrapper(gym.ActionWrapper):
     def __init__(self, env, allowed_actions):
         super(ActionSpaceWrapper, self).__init__(env)
         self.allowed_actions = allowed_actions
-        self.action_space = Discrete(len(allowed_actions), start=1)
+        self.action_space = Discrete(len(allowed_actions))
 
     def action(self, action):
         return self.allowed_actions[action]

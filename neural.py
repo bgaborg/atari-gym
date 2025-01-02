@@ -38,3 +38,7 @@ class AgentNet(nn.Module):
             return self.online(input)
         elif model == 'target':
             return self.target(input)
+
+if __name__ == '__main__':
+    net = AgentNet((4, 84, 84), 6)
+    print(net)

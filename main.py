@@ -8,26 +8,36 @@ import metrics
 import agent
 import discord_bot
 
+## ENVIRONMENT
+render = False
 gym.register_envs(ale_py)
-
-env = gym.make('ALE/SpaceInvaders-v5')
+env = gym.make('ALE/SpaceInvaders-v5', render_mode="human" if render else None)
 env = wrappers.SkipFrame(env, skip=4)
 env = gym.wrappers.GrayscaleObservation(env, keep_dim=False)
 env = gym.wrappers.ResizeObservation(env, shape=(84, 84))
 env = gym.wrappers.TransformObservation(env, lambda obs: (obs / 255.0).astype(np.uint8), observation_space=env.observation_space)
 env = gym.wrappers.FrameStackObservation(env, 4)
-env = wrappers.ActionSpaceWrapper(env, [1,2,3,4,5])
+allowed_actions = [1,4,5]
+env = wrappers.ActionSpaceWrapper(env, allowed_actions)
 observation, info = env.reset()
+# The environment's action space
+print(f"Action space: {env.action_space}")
+print("Possible actions:")
+for action in allowed_actions:
+    print(f"Action {action}: {env.unwrapped.get_action_meanings()[action]}")
 
-# # The environment's action space
-# print(f"Action space: {env.action_space}")
-
-# print("Possible actions:")
-# for action in range(env.action_space.n):
-#     print(f"Action {action}: {env.unwrapped.get_action_meanings()[action]}")
-
+## CHECKPOINTS AND AGENT
 save_dir = Path('checkpoints') / datetime.datetime.now().strftime('%Y-%m-%dT%H-%M-%S')
 save_dir.mkdir(parents=True)
+checkpoints = sorted(Path('checkpoints').iterdir(), key=lambda x: x.stat().st_ctime, reverse=True)
+# in this directory the checkpoinst are saved in .chkpt file extension. find the last checkpoint
+if len(checkpoints) > 0:
+    last_checkpoint = sorted(checkpoints[0].glob('*.chkpt'), key=lambda x: x.stat().st_ctime, reverse=True)
+    if len(last_checkpoint) > 0:
+        last_checkpoint = last_checkpoint[0]
+    else:
+        last_checkpoint = None
+print(f"Last checkpoint: {last_checkpoint}")
 logger = metrics.MetricLogger(save_dir=save_dir)
 
 episodes = 40000
@@ -38,7 +48,7 @@ agent = agent.Agent(
     action_dim=env.action_space.n,
     save_dir=save_dir,
     iterations=episodes,
-    checkpoint=None
+    checkpoint=last_checkpoint
 )
 
 total_start_time = datetime.datetime.now()
@@ -51,7 +61,8 @@ for e in range(episodes):
     episode_start_time = datetime.datetime.now()
     while True:
         # 3. Show environment (the visual)
-        # env.render()
+        if render:
+            env.render()
 
         # 4. Run agent on the state
         action = agent.act(observation)
@@ -93,9 +104,8 @@ for e in range(episodes):
             step=agent.curr_step
         )
 
-    app_running_time = datetime.datetime.now() - total_start_time
-    if app_running_time.total_seconds() > 30 * 60:
-        # report current status to Discord
+    if e % 5000 == 0:
+        app_running_time = datetime.datetime.now() - total_start_time
         msg = (
             f"Training has been running for {app_running_time.total_seconds()/60} minutes. "
             f"Episode {e} finished with reward {comm_reward} in {delta_time.total_seconds()} seconds."
