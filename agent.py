@@ -36,7 +36,6 @@ class Agent:
             self.device = 'mps:0'
         else:
             self.device = 'cpu'
-            torch.device("cpu")
         torch.device(self.device)
         torch.set_default_device(self.device)
         print(f"Using device: {torch.get_default_device()}")
