@@ -21,8 +21,8 @@ This project implements a reinforcement learning agent for playing Atari games u
 
 1. Clone the repository:
     ```sh
-    git clone https://github.com/yourusername/atari-gym-agent.git
-    cd atari-gym-agent
+    git clone https://github.com/bgaborg/atari-gym.git
+    cd atari-gym
     ```
 
 2. Create a virtual environment with uv, and install the required packages:
