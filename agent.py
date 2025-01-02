@@ -8,7 +8,7 @@ from collections import deque
 
 class Agent:
     def __init__(self, state_dim, action_dim, save_dir, iterations, checkpoint=None):
-        my_rig_factor = 0.75
+        my_rig_factor = 1
         self.state_dim = state_dim
         self.action_dim = action_dim
         self.memory = deque(maxlen=int(100_000 * my_rig_factor))
@@ -29,12 +29,17 @@ class Agent:
         self.save_dir = save_dir
 
         self.use_cuda = torch.cuda.is_available()
-        print(f"Using CUDA: {self.use_cuda}")
+        self.use_mps_device = torch.backends.mps.is_available()
+        torch.device("cuda" if self.use_cuda else "cpu")
+        if self.use_mps_device:
+            self.device = 'mps:0'
+            torch.device("mps")
+        torch.set_default_device(self.device)
+        print(f"Using device: {torch.get_default_device()}")
 
         # Agent's DNN to predict the most optimal action - we implement this in the Learn section
         self.net = AgentNet(self.state_dim, self.action_dim).float()
-        if self.use_cuda:
-            self.net = self.net.to(device='cuda')
+        self.net = self.net.to(device=self.device)
         if checkpoint:
             print(f"Loading: {checkpoint}")
             self.load(checkpoint)
@@ -59,7 +64,7 @@ class Agent:
 
         # EXPLOIT
         else:
-            state = torch.FloatTensor(state).cuda() if self.use_cuda else torch.FloatTensor(state)
+            state = torch.tensor(state, dtype=torch.float, device=self.device)
             state = state.unsqueeze(0)
             action_values = self.net(state, model='online')
             action_idx = torch.argmax(action_values, axis=1).item()
@@ -88,11 +93,10 @@ class Agent:
             if torch.cuda.memory_allocated(0) > 0.8 * torch.cuda.get_device_properties(0).total_memory:
                 torch.cuda.empty_cache()
 
-        state = torch.FloatTensor(state).cuda() if self.use_cuda else torch.FloatTensor(state)
-        next_state = torch.FloatTensor(next_state).cuda() if self.use_cuda else torch.FloatTensor(next_state)
-        action = torch.LongTensor([action]).cuda() if self.use_cuda else torch.LongTensor([action])
-        reward = torch.DoubleTensor([reward]).cuda() if self.use_cuda else torch.DoubleTensor([reward])
-        done = torch.BoolTensor([done]).cuda() if self.use_cuda else torch.BoolTensor([done])
+        next_state = torch.tensor(next_state, dtype=torch.float, device=self.device)
+        action = torch.tensor([action], dtype=torch.long, device=self.device)
+        reward = torch.tensor([reward], dtype=torch.float, device=self.device)  # Changed to float32
+        done = torch.tensor([done], dtype=torch.bool, device=self.device)
 
         self.memory.append( (state, next_state, action, reward, done,) )
 
@@ -175,7 +179,7 @@ class Agent:
         if not load_path.exists():
             raise ValueError(f"{load_path} does not exist")
 
-        ckp = torch.load(load_path, map_location=('cuda' if self.use_cuda else 'cpu'))
+        ckp = torch.load(load_path, map_location=(self.device))
         exploration_rate = ckp.get('exploration_rate')
         state_dict = ckp.get('model')
 
