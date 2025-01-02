@@ -30,10 +30,14 @@ class Agent:
 
         self.use_cuda = torch.cuda.is_available()
         self.use_mps_device = torch.backends.mps.is_available()
-        torch.device("cuda" if self.use_cuda else "cpu")
-        if self.use_mps_device:
+        if self.use_cuda:
+            self.device = 'cuda'
+        elif self.use_mps_device:
             self.device = 'mps:0'
-            torch.device("mps")
+        else:
+            self.device = 'cpu'
+            torch.device("cpu")
+        torch.device(self.device)
         torch.set_default_device(self.device)
         print(f"Using device: {torch.get_default_device()}")
 
