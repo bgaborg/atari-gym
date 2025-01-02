@@ -8,6 +8,7 @@ dependencies = [
     "ale-py>=0.10.1",
     "gymnasium[other]>=1.0.0",
     "torch==2.5.1+cu121",
+    "requests>=2.32.3",
 ]
 
 
