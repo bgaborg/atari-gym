@@ -15,6 +15,7 @@ with open('config.json', 'r') as f:
 CHECKPOINT_PATH = config['checkpoint_path']
 
 ## ENVIRONMENT
+LIMIT_ACTION_SPACE = False
 render = False
 gym.register_envs(ale_py)
 env = gym.make('ALE/SpaceInvaders-v5', render_mode="human" if render else None)
@@ -23,14 +24,13 @@ env = gym.wrappers.GrayscaleObservation(env, keep_dim=False)
 env = gym.wrappers.ResizeObservation(env, shape=(84, 84))
 env = gym.wrappers.TransformObservation(env, lambda obs: (obs / 255.0).astype(np.uint8), observation_space=env.observation_space)
 env = gym.wrappers.FrameStackObservation(env, 4)
-# allowed_actions = [1,4,5]
-# env = wrappers.ActionSpaceWrapper(env, allowed_actions)
-observation, info = env.reset()
-# The environment's action space
+if LIMIT_ACTION_SPACE:
+    allowed_actions = [1,4,5]
+    env = wrappers.ActionSpaceWrapper(env, allowed_actions)
+    for action in allowed_actions:
+        print(f"Action {action}: {env.unwrapped.get_action_meanings()[action]}")
 print(f"Action space: {env.action_space}")
-# print("Possible actions:")
-# for action in allowed_actions:
-#     print(f"Action {action}: {env.unwrapped.get_action_meanings()[action]}")
+observation, info = env.reset()
 
 ## CHECKPOINTS AND AGENT
 checkpoints = sorted(Path(CHECKPOINT_PATH).iterdir(), key=lambda x: x.name, reverse=True)
