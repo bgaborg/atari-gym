@@ -92,9 +92,9 @@ class Agent:
         done(bool))
         """
 
-        if torch.cuda.is_available():
-            if torch.cuda.memory_allocated(0) > 0.8 * torch.cuda.get_device_properties(0).total_memory:
-                torch.cuda.empty_cache()
+        # if torch.cuda.is_available():
+        #     if torch.cuda.memory_allocated(0) > 0.8 * torch.cuda.get_device_properties(0).total_memory:
+        #         torch.cuda.empty_cache()
 
 
         state = torch.tensor(state, dtype=torch.float, device=self.device)
