@@ -15,7 +15,7 @@ with open('config.json', 'r') as f:
 CHECKPOINT_PATH = config['checkpoint_path']
 
 ## ENVIRONMENT
-LIMIT_ACTION_SPACE = False
+LIMIT_ACTION_SPACE = True
 render = False
 gym.register_envs(ale_py)
 env = gym.make('ALE/SpaceInvaders-v5', render_mode="human" if render else None)
@@ -25,7 +25,7 @@ env = gym.wrappers.ResizeObservation(env, shape=(84, 84))
 env = gym.wrappers.TransformObservation(env, lambda obs: (obs / 255.0).astype(np.uint8), observation_space=env.observation_space)
 env = gym.wrappers.FrameStackObservation(env, 4)
 if LIMIT_ACTION_SPACE:
-    allowed_actions = [1,4,5]
+    allowed_actions = [1,2,3,4,5]
     env = wrappers.ActionSpaceWrapper(env, allowed_actions)
     for action in allowed_actions:
         print(f"Action {action}: {env.unwrapped.get_action_meanings()[action]}")
@@ -49,7 +49,7 @@ print(f"Last checkpoint: {last_checkpoint}")
 save_dir.mkdir(parents=True)
 logger = metrics.MetricLogger(save_dir=save_dir)
 
-episodes = 40000
+episodes = 60000
 episode_times = np.zeros(episodes)
 
 agent = agent.Agent(
