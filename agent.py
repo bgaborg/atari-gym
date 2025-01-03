@@ -12,11 +12,11 @@ class Agent:
         self.state_dim = state_dim
         self.action_dim = action_dim
         self.memory = deque(maxlen=int(100_000 * my_rig_factor))
-        self.batch_size = 32
+        self.batch_size = 64
 
         self.iterations = iterations
         self.exploration_rate = 1
-        self.exploration_rate_decay = 0.99999975
+        self.exploration_rate_decay = 0.999995
         self.exploration_rate_min = 0.1
         self.gamma = 0.99
 
@@ -47,7 +47,7 @@ class Agent:
             print(f"Loading: {checkpoint}")
             self.load(checkpoint)
 
-        self.learning_rate = 0.00025
+        self.learning_rate = 0.0001
         self.optimizer = torch.optim.Adam(self.net.parameters(), lr=self.learning_rate)
         self.loss_fn = torch.nn.SmoothL1Loss()
 
