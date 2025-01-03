@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+import socket
 import requests
 
 WEBHOOK_URL_KEY = "discord_webhook"
@@ -12,11 +13,13 @@ if WEBHOOK_URL_KEY not in config or config[WEBHOOK_URL_KEY] == "":
     config[WEBHOOK_URL_KEY] = None
 
 def send(message: str):
+    # get the hostname of the server
+    hostname = socket.gethostname()
     if config[WEBHOOK_URL_KEY] is None:
         print("No webhook URL provided. Skipping sending message to Discord.")
         return
     payload = {
-        "content": f"*[gym_atari]* {message}"
+        "content": f"*[gym_atari@{hostname}]* {message}"
     }
     response = requests.post(config[WEBHOOK_URL_KEY], json=payload)
     response.raise_for_status()
