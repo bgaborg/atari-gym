@@ -122,8 +122,8 @@ class Agent:
 
     @torch.no_grad()
     def td_target(self, reward, next_state, done):
-        next_state_Q = self.net(next_state, model='online')
-        best_action = torch.argmax(next_state_Q, axis=1)
+        next_state_Q_online = self.net(next_state, model='online')
+        best_action = torch.argmax(next_state_Q_online, axis=1)
         next_Q = self.net(next_state, model='target')[np.arange(0, self.batch_size), best_action]
         return (reward + (1 - done.float()) * self.gamma * next_Q).float()
 

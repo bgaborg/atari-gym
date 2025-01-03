@@ -9,7 +9,7 @@ import agent
 import discord_bot
 
 ## ENVIRONMENT
-render = False
+render = True
 gym.register_envs(ale_py)
 env = gym.make('ALE/SpaceInvaders-v5', render_mode="human" if render else None)
 env = wrappers.SkipFrame(env, skip=4)
@@ -32,11 +32,12 @@ save_dir.mkdir(parents=True)
 checkpoints = sorted(Path('checkpoints').iterdir(), key=lambda x: x.stat().st_ctime, reverse=True)
 # in this directory the checkpoinst are saved in .chkpt file extension. find the last checkpoint
 if len(checkpoints) > 0:
-    last_checkpoint = sorted(checkpoints[0].glob('*.chkpt'), key=lambda x: x.stat().st_ctime, reverse=True)
-    if len(last_checkpoint) > 0:
-        last_checkpoint = last_checkpoint[0]
-    else:
-        last_checkpoint = None
+    for possible_checkpoint in checkpoints:
+        if len(list(possible_checkpoint.glob('*.chkpt'))) > 0:
+            last_checkpoint = sorted(possible_checkpoint.glob('*.chkpt'), key=lambda x: x.stat().st_ctime, reverse=True)
+            if len(last_checkpoint) > 0:
+                last_checkpoint = last_checkpoint[0]
+                break
 print(f"Last checkpoint: {last_checkpoint}")
 logger = metrics.MetricLogger(save_dir=save_dir)
 
