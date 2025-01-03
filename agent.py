@@ -73,8 +73,6 @@ class Agent:
             action_idx = torch.argmax(action_values, axis=1).item()
 
         # decrease exploration_rate
-        if self.exploration_rate < 0.14:    # stay young, learn!
-            self.exploration_rate = 0.35
         self.exploration_rate *= self.exploration_rate_decay
         self.exploration_rate = max(self.exploration_rate_min, self.exploration_rate)
 
