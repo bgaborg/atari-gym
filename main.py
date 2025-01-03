@@ -36,6 +36,7 @@ observation, info = env.reset()
 checkpoints = sorted(Path(CHECKPOINT_PATH).iterdir(), key=lambda x: x.name, reverse=True)
 # sort checkpoints by name
 # in this directory the checkpoinst are saved in .chkpt file extension. find the last checkpoint
+last_checkpoint = None
 if len(checkpoints) > 0:
     for possible_checkpoint in checkpoints:
         if len(list(possible_checkpoint.glob('*.chkpt'))) > 0:
