@@ -176,3 +176,22 @@ Contributions are welcome! Please open an issue or submit a pull request.
 # License
 This project is licensed under the MIT License. See the LICENSE file for details.
 
+# EC2 setup
+- install deps:
+```bash
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+    source $HOME/.local/bin/env
+    cd ~
+    git clone https://github.com/bgaborg/atari-gym.git
+    cd atari-gym
+    uv venv
+    source .venv/bin/activate
+    uv pip install -r pyproject.toml
+    byobu-enable
+    byobu
+    cp config.example.json config.json
+```
+- run the agent:
+```bash
+    python main.py
+```

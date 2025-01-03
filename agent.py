@@ -8,7 +8,7 @@ from collections import deque
 
 class Agent:
     def __init__(self, state_dim, action_dim, save_dir, iterations, checkpoint=None):
-        my_rig_factor = 0.8
+        my_rig_factor = 1
         self.state_dim = state_dim
         self.action_dim = action_dim
         self.memory = deque(maxlen=int(100_000 * my_rig_factor))
@@ -73,6 +73,8 @@ class Agent:
             action_idx = torch.argmax(action_values, axis=1).item()
 
         # decrease exploration_rate
+        if self.exploration_rate < 0.14:    # stay young, learn!
+            self.exploration_rate = 0.35
         self.exploration_rate *= self.exploration_rate_decay
         self.exploration_rate = max(self.exploration_rate_min, self.exploration_rate)
 

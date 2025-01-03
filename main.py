@@ -10,11 +10,6 @@ import agent
 import discord_bot
 
 ## CONFIGURATION
-if not Path('config.json').exists():
-    with open('config.example.json', 'r') as f:
-        config = json.load(f)
-    with open('config.json', 'w') as f:
-        json.dump(config, f, indent=4)
 with open('config.json', 'r') as f:
     config = json.load(f)
 CHECKPOINT_PATH = config['checkpoint_path']
