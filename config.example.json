@@ -1,3 +1,4 @@
 {
-    "discord_webhook": ""
+    "discord_webhook": "",
+    "checkpoint_path": "checkpoints"
 }

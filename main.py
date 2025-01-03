@@ -1,4 +1,5 @@
 import datetime
+import json
 from pathlib import Path
 import gymnasium as gym
 import ale_py
@@ -7,6 +8,16 @@ import wrappers
 import metrics
 import agent
 import discord_bot
+
+## CONFIGURATION
+if not Path('config.json').exists():
+    with open('config.example.json', 'r') as f:
+        config = json.load(f)
+    with open('config.json', 'w') as f:
+        json.dump(config, f, indent=4)
+with open('config.json', 'r') as f:
+    config = json.load(f)
+CHECKPOINT_PATH = config['checkpoint_path']
 
 ## ENVIRONMENT
 render = False
@@ -27,7 +38,7 @@ for action in allowed_actions:
     print(f"Action {action}: {env.unwrapped.get_action_meanings()[action]}")
 
 ## CHECKPOINTS AND AGENT
-checkpoints = sorted(Path('checkpoints').iterdir(), key=lambda x: x.name, reverse=True)
+checkpoints = sorted(Path(CHECKPOINT_PATH).iterdir(), key=lambda x: x.name, reverse=True)
 # sort checkpoints by name
 # in this directory the checkpoinst are saved in .chkpt file extension. find the last checkpoint
 if len(checkpoints) > 0:
@@ -37,7 +48,7 @@ if len(checkpoints) > 0:
             if len(last_checkpoint) > 0:
                 last_checkpoint = last_checkpoint[0]
                 break
-save_dir = Path('checkpoints') / datetime.datetime.now().strftime('%Y-%m-%dT%H-%M-%S')
+save_dir = Path(CHECKPOINT_PATH) / datetime.datetime.now().strftime('%Y-%m-%dT%H-%M-%S')
 print(f"Last checkpoint: {last_checkpoint}")
 save_dir.mkdir(parents=True)
 logger = metrics.MetricLogger(save_dir=save_dir)
@@ -106,7 +117,7 @@ for e in range(episodes):
             step=agent.curr_step
         )
 
-    if e % 2500 == 0:
+    if e % 1000 == 0:
         app_running_time = datetime.datetime.now() - total_start_time
         msg = (
             f"Training has been running for {app_running_time.total_seconds()/60} minutes. "
