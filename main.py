@@ -14,14 +14,15 @@ with open('config.json', 'r') as f:
     config = json.load(f)
 CHECKPOINT_PATH = config['checkpoint_path']
 DEBUG_SAVE_OBSERVATION = False
-LIMIT_ACTION_SPACE = True
+LIMIT_ACTION_SPACE = False
 RENDER_MODE_HUMAN = False
 TRAINING_EPISODES = 40000
 
 ## ENVIRONMENT
 gym.register_envs(ale_py)
-env = gym.make('ALE/SpaceInvaders-v5', render_mode="human" if RENDER_MODE_HUMAN else None)
-# env = wrappers.SkipFrame(env, skip=4)
+GAME_NAME = "Pong-v5"
+env = gym.make(f"ALE/{GAME_NAME}", render_mode="human" if RENDER_MODE_HUMAN else None)
+env = wrappers.SkipFrame(env, skip=4)
 env = gym.wrappers.GrayscaleObservation(env, keep_dim=False)
 env = gym.wrappers.ResizeObservation(env, shape=(84, 84))
 env = gym.wrappers.FrameStackObservation(env, 4)
@@ -48,9 +49,9 @@ if len(checkpoints) > 0:
             if len(last_checkpoint) > 0:
                 last_checkpoint = last_checkpoint[0]
                 break
-save_dir = Path(CHECKPOINT_PATH) / datetime.datetime.now().strftime('%Y-%m-%dT%H-%M-%S')
+save_dir = Path(CHECKPOINT_PATH+f"_{GAME_NAME}") / datetime.datetime.now().strftime('%Y-%m-%d')
 print(f"Last checkpoint: {last_checkpoint}")
-save_dir.mkdir(parents=True)
+save_dir.mkdir(parents=True, exist_ok=True)
 logger = metrics.MetricLogger(save_dir=save_dir)
 
 episode_times = np.zeros(TRAINING_EPISODES)
