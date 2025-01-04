@@ -21,7 +21,7 @@ TRAINING_EPISODES = 60000
 ## ENVIRONMENT
 gym.register_envs(ale_py)
 env = gym.make('ALE/SpaceInvaders-v5', render_mode="human" if RENDER_MODE_HUMAN else None)
-# env = wrappers.SkipFrame(env, skip=4)
+env = wrappers.SkipFrame(env, skip=4)
 env = gym.wrappers.GrayscaleObservation(env, keep_dim=False)
 env = gym.wrappers.ResizeObservation(env, shape=(84, 84))
 env = gym.wrappers.FrameStackObservation(env, 4)
@@ -136,7 +136,7 @@ for e in range(TRAINING_EPISODES):
     if e % 1000 == 0:
         app_running_time = datetime.datetime.now() - total_start_time
         msg = (
-            f"Training has been running for {app_running_time.total_seconds()/60} minutes. "
+            f"Training has been running for {app_running_time.total_seconds()/60} minutes. Percentage: {e / TRAINING_EPISODES * 100}%."
             f"Episode {e} finished with reward {comm_reward} in {delta_time.total_seconds()} seconds."
             f"The average episode time is {average_episode_time} seconds, the expected time remaining is {expected_time_remaining}."
             f"Epsilon: {agent.exploration_rate}, Step: {agent.curr_step}, Q: {q}, Loss: {loss}"
