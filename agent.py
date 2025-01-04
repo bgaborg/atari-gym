@@ -8,11 +8,11 @@ from collections import deque
 
 class Agent:
     def __init__(self, state_dim, action_dim, save_dir, iterations, checkpoint=None):
-        my_rig_factor = 0.9
+        my_rig_factor = 0.8
         self.state_dim = state_dim
         self.action_dim = action_dim
         self.memory = deque(maxlen=int(100_000 * my_rig_factor))
-        self.batch_size = 64
+        self.batch_size = 32
 
         self.iterations = iterations
         self.exploration_rate = 1
@@ -47,7 +47,7 @@ class Agent:
             print(f"Loading: {checkpoint}")
             self.load(checkpoint)
 
-        self.learning_rate = 0.0001
+        self.learning_rate = 0.00025
         self.optimizer = torch.optim.Adam(self.net.parameters(), lr=self.learning_rate)
         self.loss_fn = torch.nn.SmoothL1Loss()
 
