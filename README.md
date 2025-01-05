@@ -176,7 +176,7 @@ Contributions are welcome! Please open an issue or submit a pull request.
 # License
 This project is licensed under the MIT License. See the LICENSE file for details.
 
-# EC2 setup
+# EC2 setup - g6.2xlarge
 - install deps:
 ```bash
     curl -LsSf https://astral.sh/uv/install.sh | sh
