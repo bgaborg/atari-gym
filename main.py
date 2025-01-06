@@ -14,7 +14,7 @@ with open('config.json', 'r') as f:
     config = json.load(f)
 CHECKPOINT_PATH = config['checkpoint_path']
 DEBUG_SAVE_OBSERVATION = False
-LIMIT_ACTION_SPACE = True
+LIMIT_ACTION_SPACE = False
 RENDER_MODE_HUMAN = False
 TRAINING_EPISODES = 40000
 
