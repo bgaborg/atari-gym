@@ -14,7 +14,7 @@ class Agent:
 
         self.iterations = iterations
         self.exploration_rate = 1
-        self.exploration_rate_decay = 0.99999975
+        self.exploration_rate_decay = 0.999995
         self.exploration_rate_min = 0.1
         self.gamma = 0.99
 
