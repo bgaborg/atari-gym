@@ -6,7 +6,7 @@ from neural import AgentNet, MODEL_FLAG_ONLINE, MODEL_FLAG_TARGET
 
 class Agent:
     def __init__(self, state_dim, action_dim, save_dir, iterations, checkpoint=None):
-        my_rig_factor = 0.8
+        my_rig_factor = 0.9
         self.state_dim = state_dim
         self.action_dim = action_dim
         self.memory = deque(maxlen=int(100_000 * my_rig_factor))

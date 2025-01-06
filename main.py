@@ -14,7 +14,7 @@ with open('config.json', 'r') as f:
     config = json.load(f)
 CHECKPOINT_PATH = config['checkpoint_path']
 DEBUG_SAVE_OBSERVATION = False
-LIMIT_ACTION_SPACE = False
+LIMIT_ACTION_SPACE = True
 RENDER_MODE_HUMAN = False
 TRAINING_EPISODES = 40000
 
@@ -29,7 +29,7 @@ env = gym.wrappers.FrameStackObservation(env, 4)
 env = gym.wrappers.TransformObservation(env, lambda obs: obs / 255., observation_space=env.observation_space)
 
 if LIMIT_ACTION_SPACE:
-    allowed_actions = [2,3]
+    allowed_actions = [1,2]
     env = wrappers.ActionSpaceWrapper(env, allowed_actions)
     for action in allowed_actions:
         print(f"Action {action}: {env.unwrapped.get_action_meanings()[action]}")
@@ -37,6 +37,7 @@ print(f"Action space: {env.action_space}")
 observation, info = env.reset()
 
 ## CHECKPOINTS AND AGENT
+CHECKPOINT_PATH = CHECKPOINT_PATH+f"_{GAME_NAME}"
 Path(CHECKPOINT_PATH).mkdir(parents=True, exist_ok=True)
 checkpoints = sorted(Path(CHECKPOINT_PATH).iterdir(), key=lambda x: x.name, reverse=True)
 # sort checkpoints by name
@@ -49,7 +50,7 @@ if len(checkpoints) > 0:
             if len(last_checkpoint) > 0:
                 last_checkpoint = last_checkpoint[0]
                 break
-save_dir = Path(CHECKPOINT_PATH+f"_{GAME_NAME}") / datetime.datetime.now().strftime('%Y-%m-%d')
+save_dir = Path(CHECKPOINT_PATH) / datetime.datetime.now().strftime('%Y-%m-%d')
 print(f"Last checkpoint: {last_checkpoint}")
 save_dir.mkdir(parents=True, exist_ok=True)
 logger = metrics.MetricLogger(save_dir=save_dir)
