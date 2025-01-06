@@ -20,7 +20,7 @@ TRAINING_EPISODES = 40000
 
 ## ENVIRONMENT
 gym.register_envs(ale_py)
-GAME_NAME = "Pong-v5"
+GAME_NAME = "Skiing-v5"
 env = gym.make(f"ALE/{GAME_NAME}", render_mode="human" if RENDER_MODE_HUMAN else None)
 env = wrappers.SkipFrame(env, skip=4)
 env = gym.wrappers.GrayscaleObservation(env, keep_dim=False)
@@ -29,7 +29,7 @@ env = gym.wrappers.FrameStackObservation(env, 4)
 env = gym.wrappers.TransformObservation(env, lambda obs: obs / 255., observation_space=env.observation_space)
 
 if LIMIT_ACTION_SPACE:
-    allowed_actions = [1,2,3,4,5]
+    allowed_actions = [2,3]
     env = wrappers.ActionSpaceWrapper(env, allowed_actions)
     for action in allowed_actions:
         print(f"Action {action}: {env.unwrapped.get_action_meanings()[action]}")
@@ -57,7 +57,7 @@ logger = metrics.MetricLogger(save_dir=save_dir)
 episode_times = np.zeros(TRAINING_EPISODES)
 agent = agent.Agent(
     state_dim=(4, 84, 84),
-    action_dim=env.action_space.n,
+    action_dim=int(env.action_space.n),
     save_dir=save_dir,
     iterations=TRAINING_EPISODES,
     checkpoint=last_checkpoint

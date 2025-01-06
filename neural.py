@@ -1,5 +1,9 @@
+import torch
 from torch import nn
 import copy
+
+MODEL_FLAG_ONLINE = 0
+MODEL_FLAG_TARGET = 1
 
 class AgentNet(nn.Module):
     '''mini cnn structure
@@ -33,12 +37,13 @@ class AgentNet(nn.Module):
         for p in self.target.parameters():
             p.requires_grad = False
 
-    def forward(self, input, model):
-        if model == 'online':
+    def forward(self, input, model_flag: int):
+        if model_flag == 0:
             return self.online(input)
-        elif model == 'target':
+        elif model_flag == 1:
             return self.target(input)
 
 if __name__ == '__main__':
     net = AgentNet((4, 84, 84), 6)
-    print(net)
+    scripted_net = torch.jit.script(net)
+    print(scripted_net)

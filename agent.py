@@ -1,10 +1,8 @@
 import torch
 import random
 import numpy as np
-
-from neural import AgentNet
 from collections import deque
-
+from neural import AgentNet, MODEL_FLAG_ONLINE, MODEL_FLAG_TARGET
 
 class Agent:
     def __init__(self, state_dim, action_dim, save_dir, iterations, checkpoint=None):
@@ -40,8 +38,8 @@ class Agent:
         torch.set_default_device(self.device)
         print(f"Using device: {torch.get_default_device()}")
 
-        # Agent's DNN to predict the most optimal action - we implement this in the Learn section
-        self.net = AgentNet(self.state_dim, self.action_dim).float()
+        # Script the network and use it directly
+        self.net = torch.jit.script(AgentNet((4, 84, 84), action_dim))
         self.net = self.net.to(device=self.device)
         if checkpoint:
             print(f"Loading: {checkpoint}")
@@ -51,13 +49,12 @@ class Agent:
         self.optimizer = torch.optim.Adam(self.net.parameters(), lr=self.learning_rate)
         self.loss_fn = torch.nn.SmoothL1Loss()
 
-
     def act(self, state):
         """
         Given a state, choose an epsilon-greedy action and update value of step.
 
         Inputs:
-        state(LazyFrame): A single observation of the current state, dimension is (state_dim)
+        state: A single observation of the current state, dimension is (state_dim)
         Outputs:
         action_idx (int): An integer representing which action Agent will perform
         """
@@ -69,7 +66,7 @@ class Agent:
         else:
             state = torch.tensor(state, dtype=torch.float, device=self.device)
             state = state.unsqueeze(0)
-            action_values = self.net(state, model='online')
+            action_values = self.net(state, MODEL_FLAG_ONLINE)  # Use 0 for 'online'
             action_idx = torch.argmax(action_values, axis=1).item()
 
         # decrease exploration_rate
@@ -85,17 +82,12 @@ class Agent:
         Store the experience to self.memory (replay buffer)
 
         Inputs:
-        state (LazyFrame),
-        next_state (LazyFrame),
+        state,
+        next_state,
         action (int),
         reward (float),
-        done(bool))
+        done (bool)
         """
-
-        # if torch.cuda.is_available():
-        #     if torch.cuda.memory_allocated(0) > 0.8 * torch.cuda.get_device_properties(0).total_memory:
-        #         torch.cuda.empty_cache()
-
 
         state = torch.tensor(state, dtype=torch.float, device=self.device)
         next_state = torch.tensor(next_state, dtype=torch.float, device=self.device)
@@ -105,7 +97,6 @@ class Agent:
 
         self.memory.append((state, next_state, action, reward, done))
 
-
     def recall(self):
         """
         Retrieve a batch of experiences from memory
@@ -114,31 +105,26 @@ class Agent:
         state, next_state, action, reward, done = map(torch.stack, zip(*batch))
         return state, next_state, action.squeeze(), reward.squeeze(), done.squeeze()
 
-
     def td_estimate(self, state, action):
-        current_Q = self.net(state, model='online')[np.arange(0, self.batch_size), action] # Q_online(s,a)
+        current_Q = self.net(state, MODEL_FLAG_ONLINE)[np.arange(0, self.batch_size), action]  # Use 0 for 'online'
         return current_Q
-
 
     @torch.no_grad()
     def td_target(self, reward, next_state, done):
-        next_state_Q_online = self.net(next_state, model='online')
+        next_state_Q_online = self.net(next_state, MODEL_FLAG_ONLINE)  # Use 0 for 'online'
         best_action = torch.argmax(next_state_Q_online, axis=1)
-        next_Q = self.net(next_state, model='target')[np.arange(0, self.batch_size), best_action]
+        next_Q = self.net(next_state, MODEL_FLAG_TARGET)[np.arange(0, self.batch_size), best_action]  # Use 1 for 'target'
         return (reward + (1 - done.float()) * self.gamma * next_Q).float()
 
-
-    def update_Q_online(self, td_estimate, td_target) :
+    def update_Q_online(self, td_estimate, td_target):
         loss = self.loss_fn(td_estimate, td_target)
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()
         return loss.item()
 
-
     def update_target_network(self):
         self.net.target.load_state_dict(self.net.online.state_dict())
-
 
     def learn(self):
         if self.curr_step % self.sync_every == 0:
@@ -167,7 +153,6 @@ class Agent:
 
         return (td_est.mean().item(), loss)
 
-
     def save(self):
         save_path = self.save_dir / f"agent_net_{int(self.curr_step // self.save_every)}.chkpt"
         torch.save(
@@ -179,7 +164,6 @@ class Agent:
         )
         print(f"Agent Net saved to {save_path} at step {self.curr_step}")
 
-
     def load(self, load_path):
         if not load_path.exists():
             raise ValueError(f"{load_path} does not exist")
@@ -187,7 +171,6 @@ class Agent:
         ckp = torch.load(load_path, map_location=(self.device))
         exploration_rate = ckp.get('exploration_rate')
         state_dict = ckp.get('model')
-
-        print(f"Loading model at {load_path} with exploration rate {exploration_rate}")
         self.net.load_state_dict(state_dict)
         self.exploration_rate = exploration_rate
+        print(f"Loaded model from {load_path} with exploration rate {self.exploration_rate}")
