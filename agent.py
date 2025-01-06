@@ -10,7 +10,7 @@ class Agent:
         self.state_dim = state_dim
         self.action_dim = action_dim
         self.memory = deque(maxlen=int(100_000 * my_rig_factor))
-        self.batch_size = 32
+        self.batch_size = 128
 
         self.iterations = iterations
         self.exploration_rate = 1
@@ -21,7 +21,7 @@ class Agent:
         self.curr_step = 0
         self.burnin = int(100_000 * my_rig_factor)  # min. experiences before training
         self.learn_every = 3  # no. of experiences between updates to Q_online
-        self.sync_every = 1_000  # no. of experiences between Q_target & Q_online sync (tau)
+        self.sync_every = 10_000  # no. of experiences between Q_target & Q_online sync (tau)
 
         self.save_every = 200_000   # no. of experiences between saving Agent Net
         self.save_dir = save_dir
