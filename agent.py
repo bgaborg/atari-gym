@@ -5,17 +5,16 @@ from collections import deque
 from neural import AgentNet, MODEL_FLAG_ONLINE, MODEL_FLAG_TARGET
 
 class Agent:
-    def __init__(self, state_dim, action_dim, save_dir, iterations, checkpoint=None):
+    def __init__(self, state_dim, action_dim, save_dir, checkpoint=None, epsilon=1.0):
         my_rig_factor = 0.9
         self.state_dim = state_dim
         self.action_dim = action_dim
         self.memory = deque(maxlen=int(100_000 * my_rig_factor))
         self.batch_size = 32
 
-        self.iterations = iterations
-        self.exploration_rate = 1
+        self.exploration_rate = epsilon
         self.exploration_rate_decay = 0.99999975
-        self.exploration_rate_min = 0.1
+        self.exploration_rate_min = 0.02
         self.gamma = 0.99
 
         self.curr_step = 0
