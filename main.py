@@ -13,22 +13,29 @@ import discord_bot
 with open('config.json', 'r') as f:
     config = json.load(f)
 CHECKPOINT_PATH = config['checkpoint_path']
-DEBUG_SAVE_OBSERVATION = False
-LIMIT_ACTION_SPACE = True
+DEBUG_SAVE_OBSERVATION = True
+LIMIT_ACTION_SPACE = False
 RENDER_MODE_HUMAN = True
-TRAINING_EPISODES = 60000
+TRAINING_EPISODES = 80000
 
 ## ENVIRONMENT
 gym.register_envs(ale_py)
-env = gym.make('ALE/SpaceInvaders-v5', render_mode="human" if RENDER_MODE_HUMAN else None)
-env = wrappers.SkipFrame(env, skip=4)
-env = gym.wrappers.GrayscaleObservation(env, keep_dim=False)
-env = gym.wrappers.ResizeObservation(env, shape=(84, 84))
-env = gym.wrappers.FrameStackObservation(env, 4)
-env = gym.wrappers.TransformObservation(env, lambda obs: obs / 255., observation_space=env.observation_space)
+GAME_NAME = "SpaceInvaders-v5"
+env = gym.make(f"ALE/{GAME_NAME}", render_mode="human" if RENDER_MODE_HUMAN else None, frameskip=1)
+env = gym.wrappers.AtariPreprocessing(
+        env=env,
+        noop_max=30,
+        frame_skip=4,
+        screen_size=84,
+        terminal_on_life_loss=True,
+        grayscale_obs=True,
+        grayscale_newaxis=False,
+        scale_obs=True,
+    )
+env = gym.wrappers.FrameStackObservation(env, stack_size=4)
 
 if LIMIT_ACTION_SPACE:
-    allowed_actions = [1,2,3,4,5]
+    allowed_actions = [1,2]
     env = wrappers.ActionSpaceWrapper(env, allowed_actions)
     for action in allowed_actions:
         print(f"Action {action}: {env.unwrapped.get_action_meanings()[action]}")
@@ -36,6 +43,7 @@ print(f"Action space: {env.action_space}")
 observation, info = env.reset()
 
 ## CHECKPOINTS AND AGENT
+CHECKPOINT_PATH = CHECKPOINT_PATH+f"_{GAME_NAME}"
 Path(CHECKPOINT_PATH).mkdir(parents=True, exist_ok=True)
 checkpoints = sorted(Path(CHECKPOINT_PATH).iterdir(), key=lambda x: x.name, reverse=True)
 # sort checkpoints by name
@@ -44,22 +52,22 @@ last_checkpoint = None
 if len(checkpoints) > 0:
     for possible_checkpoint in checkpoints:
         if len(list(possible_checkpoint.glob('*.chkpt'))) > 0:
-            last_checkpoint = sorted(possible_checkpoint.glob('*.chkpt'), key=lambda x: x.stat().st_ctime, reverse=True)
+            last_checkpoint = sorted(possible_checkpoint.glob('*.chkpt'), key=lambda x: x.name, reverse=True)
             if len(last_checkpoint) > 0:
                 last_checkpoint = last_checkpoint[0]
                 break
 save_dir = Path(CHECKPOINT_PATH) / datetime.datetime.now().strftime('%Y-%m-%dT%H-%M-%S')
 print(f"Last checkpoint: {last_checkpoint}")
-save_dir.mkdir(parents=True)
+save_dir.mkdir(parents=True, exist_ok=True)
 logger = metrics.MetricLogger(save_dir=save_dir)
 
 episode_times = np.zeros(TRAINING_EPISODES)
 agent = agent.Agent(
     state_dim=(4, 84, 84),
-    action_dim=env.action_space.n,
+    action_dim=int(env.action_space.n),
     save_dir=save_dir,
-    iterations=TRAINING_EPISODES,
-    checkpoint=last_checkpoint
+    checkpoint=last_checkpoint,
+    epsilon=1.0 if not RENDER_MODE_HUMAN else 0.01
 )
 
 if DEBUG_SAVE_OBSERVATION:

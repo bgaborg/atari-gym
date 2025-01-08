@@ -1,13 +1,12 @@
-import torch
-from torch import nn
+import torch.nn as nn
 import copy
 
-MODEL_FLAG_ONLINE = 0
-MODEL_FLAG_TARGET = 1
+## This is a deeper neural network structure that is used in the agent.py file
+## Takes more time to train but can potentially learn more complex patterns
 
 class AgentNet(nn.Module):
-    '''mini cnn structure
-    input -> (conv2d + relu) x 3 -> flatten -> (dense + relu) x 2 -> output
+    '''Improved CNN structure for Atari games
+    input -> (conv2d + batchnorm + relu) x 4 -> flatten -> (dense + relu + dropout) x 2 -> output
     '''
     def __init__(self, input_dim, output_dim):
         super().__init__()
@@ -20,14 +19,21 @@ class AgentNet(nn.Module):
 
         self.online = nn.Sequential(
             nn.Conv2d(in_channels=c, out_channels=32, kernel_size=8, stride=4),
+            nn.BatchNorm2d(32),
             nn.ReLU(),
             nn.Conv2d(in_channels=32, out_channels=64, kernel_size=4, stride=2),
+            nn.BatchNorm2d(64),
             nn.ReLU(),
-            nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, stride=1),
+            nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3, stride=1),
+            nn.BatchNorm2d(128),
+            nn.ReLU(),
+            nn.Conv2d(in_channels=128, out_channels=128, kernel_size=3, stride=1),
+            nn.BatchNorm2d(128),
             nn.ReLU(),
             nn.Flatten(),
-            nn.Linear(3136, 512),
+            nn.Linear(3200, 512),  # Adjusted input size based on additional conv layers
             nn.ReLU(),
+            nn.Dropout(p=0.5),
             nn.Linear(512, output_dim)
         )
 
@@ -37,13 +43,12 @@ class AgentNet(nn.Module):
         for p in self.target.parameters():
             p.requires_grad = False
 
-    def forward(self, input, model_flag: int):
-        if model_flag == 0:
+    def forward(self, input, model):
+        if model == 'online':
             return self.online(input)
-        elif model_flag == 1:
+        elif model == 'target':
             return self.target(input)
 
 if __name__ == '__main__':
     net = AgentNet((4, 84, 84), 6)
-    scripted_net = torch.jit.script(net)
-    print(scripted_net)
+    print(net)
