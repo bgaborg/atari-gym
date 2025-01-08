@@ -2,6 +2,13 @@
 
 This project implements a reinforcement learning agent for playing Atari games using the Arcade Learning Environment (ALE) and PyTorch.
 
+
+## Includes Trained Agent for Space Invaders
+
+![Reward plot](checkpoints_SpaceInvaders-v5/2025-01-07T16-06-01/reward_plot.png)
+
+The agent was trained for 10 million steps on the Space Invaders game. The training process took approximately 8 hours on a single NVIDIA Tesla T4 GPU. The agent achieved an average reward of around 300 points per episode after training.
+
 ## Project Structure
 
 - `agent.py`: Contains the implementation of the reinforcement learning agent.
