@@ -13,10 +13,10 @@ import discord_bot
 with open('config.json', 'r') as f:
     config = json.load(f)
 CHECKPOINT_PATH = config['checkpoint_path']
-DEBUG_SAVE_OBSERVATION = False
+DEBUG_SAVE_OBSERVATION = True
 LIMIT_ACTION_SPACE = False
-RENDER_MODE_HUMAN = False
-TRAINING_EPISODES = 120000
+RENDER_MODE_HUMAN = True
+TRAINING_EPISODES = 80000
 
 ## ENVIRONMENT
 gym.register_envs(ale_py)
@@ -52,7 +52,7 @@ last_checkpoint = None
 if len(checkpoints) > 0:
     for possible_checkpoint in checkpoints:
         if len(list(possible_checkpoint.glob('*.chkpt'))) > 0:
-            last_checkpoint = sorted(possible_checkpoint.glob('*.chkpt'), key=lambda x: x.stat().st_ctime, reverse=True)
+            last_checkpoint = sorted(possible_checkpoint.glob('*.chkpt'), key=lambda x: x.name, reverse=True)
             if len(last_checkpoint) > 0:
                 last_checkpoint = last_checkpoint[0]
                 break
