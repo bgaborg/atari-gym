@@ -144,7 +144,7 @@ for e in range(TRAINING_EPISODES):
     if e % 1000 == 0:
         app_running_time = datetime.datetime.now() - total_start_time
         msg = (
-            f"Training has been running for {app_running_time.total_seconds()/60} minutes. "
+            f"Training has been running for {app_running_time.total_seconds()/60} minutes. Percentage: {e / TRAINING_EPISODES * 100}%."
             f"Episode {e} finished with reward {comm_reward} in {delta_time.total_seconds()} seconds."
             f"The average episode time is {average_episode_time} seconds, the expected time remaining is {expected_time_remaining}."
             f"Epsilon: {agent.exploration_rate}, Step: {agent.curr_step}, Q: {q}, Loss: {loss}"
