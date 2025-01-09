@@ -7,7 +7,7 @@ This project implements a reinforcement learning agent for playing Atari games u
 
 <p align="center">
     <img src="checkpoints_SpaceInvaders-v5/2025-01-07T16-06-01/reward_plot.jpg"
-         alt="Reward plot" style="align: center;"/>
+         alt="Reward plot" style="align: center;"/><br />
     <i>Reward plot</i>
 </p>
 
