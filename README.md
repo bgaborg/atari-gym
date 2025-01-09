@@ -5,11 +5,11 @@ This project implements a reinforcement learning agent for playing Atari games u
 
 ## Includes Trained Agent for Space Invaders
 
-<figure style="text-align: center;">
+<p align="center">
     <img src="checkpoints_SpaceInvaders-v5/2025-01-07T16-06-01/reward_plot.jpg"
          alt="Reward plot" style="align: center;"/>
     <figcaption><i>Reward plot</i></figcaption>
-</figure>
+</p>
 
 The agent was trained for 10 million steps on the Space Invaders game. The training process took approximately 8 hours on a single NVIDIA Tesla T4 GPU. The agent achieved an average reward of around 300 points per episode after training.
 The agent will be loaded from the checkpoint and evaluated on the Space Invaders environment by default.
