@@ -5,9 +5,9 @@ This project implements a reinforcement learning agent for playing Atari games u
 
 ## Includes Trained Agent for Space Invaders
 
-<figure align="center">
+<figure style="text-align: center;">
     <img src="checkpoints_SpaceInvaders-v5/2025-01-07T16-06-01/reward_plot.jpg"
-         alt="Reward plot">
+         alt="Reward plot" style="align: center;"/>
     <figcaption><i>Reward plot</i></figcaption>
 </figure>
 
